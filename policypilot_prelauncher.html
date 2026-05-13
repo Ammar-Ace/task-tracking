@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PolicyPilot Pre-Launch Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161d;
+    --border: #1e2330;
+    --accent: #c8f135;
+    --accent2: #4af0b8;
+    --accent3: #f0a84a;
+    --accent4: #e05a7a;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --done-bg: #151d12;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 32px 24px 60px;
+  }
+
+  header {
+    max-width: 860px;
+    margin: 0 auto 36px;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .controls {
+    max-width: 860px;
+    margin: 0 auto 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-right: 4px;
+  }
+
+  .pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .pill:hover { border-color: var(--accent); color: var(--accent); }
+  .pill.active { background: var(--accent); color: #0d0f14; border-color: var(--accent); font-weight: 500; }
+
+  .progress-bar-wrap {
+    max-width: 860px;
+    margin: 0 auto 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .progress-label { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+  .progress-count { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); white-space: nowrap; }
+
+  .phases { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+  .phase {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 22px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .phase-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .phase-title { font-size: 15px; font-weight: 700; flex: 1; }
+
+  .phase-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+
+  .phase-days {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .phase-chevron { color: var(--muted); font-size: 14px; transition: transform 0.2s; }
+  .phase.collapsed .phase-chevron { transform: rotate(-90deg); }
+
+  .phase-body { padding: 6px 0; }
+  .phase.collapsed .phase-body { display: none; }
+
+  .task-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 11px 22px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-row:hover { background: rgba(255,255,255,0.02); }
+  .task-row.done { opacity: 0.45; background: var(--done-bg); }
+
+  .checkbox {
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .task-row.done .checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check-icon { display: none; color: #0d0f14; font-size: 11px; font-weight: 700; }
+  .task-row.done .check-icon { display: block; }
+
+  .task-info { flex: 1; min-width: 0; }
+  .task-name {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text);
+  }
+  .task-row.done .task-name { text-decoration: line-through; color: var(--muted); }
+
+  .task-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+
+  .task-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .owner-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .owner-F1 { background: rgba(200,241,53,0.12); color: var(--accent); border: 1px solid rgba(200,241,53,0.2); }
+  .owner-OPS { background: rgba(74,240,184,0.1); color: var(--accent2); border: 1px solid rgba(74,240,184,0.2); }
+  .owner-MKT { background: rgba(240,168,74,0.1); color: var(--accent3); border: 1px solid rgba(240,168,74,0.2); }
+  .owner-CS { background: rgba(224,90,122,0.1); color: var(--accent4); border: 1px solid rgba(224,90,122,0.2); }
+  .owner-ALL { background: rgba(150,150,150,0.1); color: #aaa; border: 1px solid rgba(150,150,150,0.2); }
+  .owner-DEL { background: rgba(130,100,220,0.12); color: #b39ddb; border: 1px solid rgba(130,100,220,0.2); }
+
+  .task-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .phase-progress {
+    height: 3px;
+    background: var(--border);
+    border-radius: 0 0 0 0;
+  }
+  .phase-progress-fill {
+    height: 100%;
+    border-radius: 0;
+    transition: width 0.4s;
+  }
+
+  .hidden { display: none !important; }
+
+  .legend {
+    max-width: 860px;
+    margin: 32px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .legend-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .critical-note {
+    max-width: 860px;
+    margin: 20px auto 0;
+    padding: 16px 22px;
+    background: rgba(224,90,122,0.06);
+    border: 1px solid rgba(224,90,122,0.2);
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent4);
+    line-height: 1.7;
+  }
+  .critical-note strong { display: block; margin-bottom: 6px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">PolicyPilot · Pre-Launch Master Checklist</div>
+  <h1>Before Week 1<br><span>Get These Done.</span></h1>
+  <div class="subtitle">6 phases · ~12 days · 5 founders</div>
+</header>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">Overall progress</span>
+  <div class="bar-track"><div class="bar-fill" id="globalBar" style="width:0%"></div></div>
+  <span class="progress-count" id="globalCount">0 / 0</span>
+</div>
+
+<div class="controls">
+  <span class="filter-label">Filter by owner →</span>
+  <button class="pill active" data-filter="ALL" onclick="setFilter('ALL',this)">Everyone</button>
+  <button class="pill" data-filter="F1" onclick="setFilter('F1',this)">F1 (You)</button>
+  <button class="pill" data-filter="OPS" onclick="setFilter('OPS',this)">Ops Lead</button>
+  <button class="pill" data-filter="MKT" onclick="setFilter('MKT',this)">Marketing Lead</button>
+  <button class="pill" data-filter="CS" onclick="setFilter('CS',this)">Customer Success</button>
+  <button class="pill" data-filter="DEL" onclick="setFilter('DEL',this)">Delivery Lead</button>
+</div>
+
+<div class="phases" id="phases"></div>
+
+<div class="critical-note">
+  <strong>⚠ Do These Before Anything Else</strong>
+  1. Legal entity must exist before you sign contracts or collect payments. &nbsp;
+  2. Draft MSA/DPA/NDA before building the checkout gate (you need the PDFs first). &nbsp;
+  3. Policy templates are your core product — without them you can't deliver to customer #1.
+</div>
+
+<div class="legend">
+  <span class="legend-title">Owner key</span>
+  <span class="owner-tag owner-F1">F1 = You</span>
+  <span class="owner-tag owner-OPS">OPS = Operations Lead</span>
+  <span class="owner-tag owner-MKT">MKT = Marketing Lead</span>
+  <span class="owner-tag owner-CS">CS = Customer Success Lead</span>
+  <span class="owner-tag owner-DEL">DEL = Delivery Lead</span>
+  <span class="owner-tag owner-ALL">ALL = Everyone</span>
+</div>
+
+<script>
+const data = [
+  {
+    phase: "PHASE 1",
+    title: "Legal Entity & Foundation",
+    days: "Days 1–3",
+    color: "#c8f135",
+    tasks: [
+      { name: "Confirm legal entity exists (FlowState LLC)", note: "If not registered — do this first, everything else depends on it", owner: "F1", time: "1–2 days" },
+      { name: "Open a dedicated business bank account", note: "Separate from personal. Required for PayPal Business and clean bookkeeping", owner: "F1", time: "1 hr" },
+      { name: "Register policypilot.com domain", note: "GoDaddy / Namecheap. Buy .com + .io as backup", owner: "F1", time: "15 min" },
+      { name: "Set up Google Workspace (team emails)", note: "name@policypilot.com for all 5 founders. ~$6/user/month", owner: "F1", time: "1 hr" },
+      { name: "Conduct founder assessments (Part 0 of ops manual)", note: "F1 runs 30-min 1-on-1s with F2–F5. Fill in the skills matrix", owner: "F1", time: "2 hrs" },
+      { name: "Finalize role assignments (Part 1)", note: "Confirm who is: Sales, Ops, Marketing, Customer Success, Delivery", owner: "F1", time: "30 min" },
+      { name: "Share ops manual with the full team", note: "Everyone must read their relevant sections before Week 1", owner: "F1", time: "30 min" },
+    ]
+  },
+  {
+    phase: "PHASE 2",
+    title: "Legal Documents (MSA, DPA, NDA)",
+    days: "Days 2–5",
+    color: "#e05a7a",
+    tasks: [
+      { name: "✅ MSA Section 1 (Electronic Acceptance) — ALREADY DRAFTED", note: "Sections 1.1–1.5 exist in your checkout gate doc. Copy into the MSA as-is. References FlowState LLC + policypilot.com/subscribe + PayPal", owner: "F1", time: "Done" },
+      { name: "Draft the rest of the MSA body (Sections 2–10)", note: "Still missing: Service scope per tier, payment/billing terms, IP ownership (you own templates, client owns their data), liability cap, cancellation/termination, dispute resolution. Use a B2B SaaS MSA template on Bonterms.com (free, open-source)", owner: "F1", time: "3–4 hrs" },
+      { name: "Draft Data Processing Agreement (DPA)", note: "NOT in any of your documents. Required for GDPR. Must cover: what data you process (employee names/emails), why, how long, sub-processors (Google, PayPal, Zapier), security measures, breach notification timeline", owner: "F1", time: "2 hrs" },
+      { name: "Draft Non-Disclosure Agreement (NDA)", note: "NOT in any of your documents. Short mutual NDA (1–2 pages). Covers: customer policy contents + employee lists you receive are confidential. Template: nda.com or Bonterms", owner: "F1", time: "1 hr" },
+      { name: "Get all three documents reviewed by a lawyer", note: "One-time cost ~$300–500. CRITICAL — you sell compliance services. Your own docs must be airtight or your credibility collapses at the first enterprise prospect", owner: "F1", time: "3–5 days" },
+      { name: "Export MSA/DPA/NDA as PDFs and host on website", note: "These are what the Tally form checkboxes link to. Upload to Google Drive + publicly accessible URL on your Carrd site (e.g. policypilot.com/legal/msa.pdf)", owner: "MKT", time: "15 min" },
+      { name: "Write Terms of Service & Privacy Policy for website footer", note: "Use Termly.io (free generator). Privacy Policy must mention: cookies, analytics, and how you use contact form data", owner: "MKT", time: "1 hr" },
+    ]
+  },
+  {
+    phase: "PHASE 3",
+    title: "Core Product — Policy Templates & Certificate",
+    days: "Days 3–7",
+    color: "#b39ddb",
+    tasks: [
+      { name: "Build GDPR / Data Handling Policy template", note: "Google Doc. Placeholders: [COMPANY NAME], [DATE], [TOOLS USED], [DATA RETENTION PERIOD]. 2–3 pages", owner: "DEL", time: "2 hrs" },
+      { name: "Build Acceptable Use Policy (AUP) template", note: "Covers: device usage, internet, software, data access rules", owner: "DEL", time: "1.5 hrs" },
+      { name: "Build Remote Work Policy template", note: "Covers: home office setup, data security at home, communication expectations", owner: "DEL", time: "1.5 hrs" },
+      { name: "Build Confidentiality / NDA Policy template", note: "Internal employee-facing version (not the B2B NDA)", owner: "DEL", time: "1 hr" },
+      { name: "Build Security Policy template", note: "Password rules, device management, incident reporting", owner: "DEL", time: "1.5 hrs" },
+      { name: "Design the Compliance Certificate", note: "Use Canva. Include: company name, policy names, date issued, acknowledgment stats (X/X employees), PolicyPilot logo, expiry date. This is your core deliverable — make it look professional", owner: "MKT", time: "3 hrs" },
+      { name: "Create Google Drive folder structure", note: "PolicyPilot / Templates / Policies · PolicyPilot / Customers / [Customer Name] · PolicyPilot / Certificates · PolicyPilot / Finances · PolicyPilot / Legal", owner: "OPS", time: "30 min" },
+      { name: "Create a test certificate using a fake company", note: "Run through the full production process once before customer #1", owner: "DEL", time: "1 hr" },
+    ]
+  },
+  {
+    phase: "PHASE 4",
+    title: "Tech Infrastructure",
+    days: "Days 4–8",
+    color: "#4af0b8",
+    tasks: [
+      { name: "Create PayPal Business account", note: "Use the FlowState LLC business email. Set up 3 subscription buttons: Essentials $99 / Professional $149 / Enterprise $299. Save each subscription link", owner: "OPS", time: "1 hr" },
+      { name: "Set up HubSpot CRM (free tier)", note: "Create pipeline: Lead → Discovery Booked → Discovery Done → Proposal → Closed Won / Lost. Add custom fields: Tier, MRR, PayPal Transaction ID", owner: "OPS", time: "2 hrs" },
+      { name: "Set up Calendly for Customer Success Lead", note: "30-min 'Kickoff Call' event. Connect to Google Calendar. Buffer: 15 min before/after", owner: "CS", time: "30 min" },
+      { name: "Create the Google Forms onboarding form", note: "13 questions per Part 6 of the ops manual. Test it by submitting a fake response", owner: "CS", time: "1 hr" },
+      { name: "Create the Google Sheets agreement log", note: "Columns: Timestamp, Email, IP, Tier, MSA Accepted, DPA Accepted, NDA Accepted, PayPal Transaction ID, Status, Notes", owner: "OPS", time: "20 min" },
+      { name: "Create the Google Sheets financial tracker", note: "Columns: Date, Customer Name, Tier, MRR, PayPal Transaction ID, Status. Add a summary row: Total MRR, Total Customers", owner: "OPS", time: "30 min" },
+      { name: "Set up Zapier: Tally form → Google Sheets agreement log", note: "Trigger: new Tally submission → Action: add row to Sheets. Map: email, tier, 3 checkboxes, timestamp", owner: "OPS", time: "1 hr" },
+      { name: "Set up Zapier: PayPal payment → update Google Sheet", note: "Trigger: new PayPal subscription → Action: update row (lookup by email) with Transaction ID + Active status", owner: "OPS", time: "1 hr" },
+      { name: "Set up Zapier: Google Forms → HubSpot (new contact/deal)", note: "Trigger: new onboarding form response → Action: create contact + deal in HubSpot. Create task for CS Lead", owner: "OPS", time: "1 hr" },
+      { name: "Set up DocuSign account and upload MSA as a template", note: "For Enterprise / Finance / Healthcare / Legal clients. CS Lead sends manually based on industry field in onboarding form", owner: "CS", time: "1 hr" },
+    ]
+  },
+  {
+    phase: "PHASE 5",
+    title: "Website & Legal Checkout Gate",
+    days: "Days 6–10",
+    color: "#f0a84a",
+    tasks: [
+      { name: "Build Carrd website (5 pages)", note: "Home, Pricing (with scope limits per tier — match MSA), About, Contact, /subscribe page. Use policypilot.com domain", owner: "MKT", time: "4–6 hrs" },
+      { name: "Write and publish pricing page copy", note: "Each tier must show scope limits clearly: employee count, policy count/month, consulting hours. No surprises post-payment", owner: "MKT", time: "1 hr" },
+      { name: "Upload MSA/DPA/NDA PDFs to website", note: "Direct links from the Tally form. Accessible without login", owner: "MKT", time: "30 min" },
+      { name: "✅ Tally form spec ALREADY DESIGNED — just build it", note: "7 questions fully specced: welcome screen, plan selector, plan details (conditional), 3 agreement checkboxes, hidden UTM fields. Conditional redirect to correct PayPal link by tier. Takes ~1 hr to build in tally.so", owner: "MKT", time: "1 hr" },
+      { name: "✅ Zapier automations ALREADY SPECCED — just configure them", note: "3 Zaps ready to build: (1) Tally → Google Sheets agreement log, (2) PayPal payment → update Sheet with Transaction ID, (3) Google Forms onboarding → DocuSign for Finance/Healthcare/Legal. All triggers + actions + field mappings documented", owner: "OPS", time: "3 hrs" },
+      { name: "Test the full checkout flow end-to-end", note: "One founder plays customer: visit pricing → /subscribe → agree to terms → PayPal → verify Sheets log → verify HubSpot task created → correct onboarding email received", owner: "ALL", time: "1 hr" },
+    ]
+  },
+  {
+    phase: "PHASE 6",
+    title: "Sales Infrastructure & First Outreach",
+    days: "Days 8–12",
+    color: "#c8f135",
+    tasks: [
+      { name: "Optimize LinkedIn profile for Sales Lead (F1)", note: "Headline: 'Co-founder @ PolicyPilot | Compliance Documentation for Agencies'. Add company, featured post, 500+ connections target", owner: "F1", time: "1 hr" },
+      { name: "Create PolicyPilot LinkedIn Company Page", note: "Logo, banner, description, website link. Post an announcement post: 'We're launching…'", owner: "MKT", time: "1 hr" },
+      { name: "Build first cold outreach list (50 target companies)", note: "ICP: digital marketing agencies and consultancies, 10–80 employees. Find on LinkedIn Sales Navigator. Export: company, contact name, title, email", owner: "F1", time: "3 hrs" },
+      { name: "Write 3 cold email templates (based on Part 4 of ops manual)", note: "Template A: lost deal angle. Template B: audit prep angle. Template C: enterprise sales angle. Keep each under 100 words", owner: "F1", time: "1 hr" },
+      { name: "Set up email sending tool (Instantly.ai or Lemlist)", note: "Connect your @policypilot.com email. Warm it up for 7 days before sending. Do NOT send from Day 1 — email warming takes time", owner: "F1", time: "1 hr" },
+      { name: "Run dry-run of full discovery call script", note: "Two founders run through the full 45-min discovery call (Part 4). One plays prospect, one plays Sales Lead. Fix awkward moments", owner: "F1", time: "1 hr" },
+      { name: "Run dry-run of full onboarding + delivery flow", note: "Two founders simulate a complete customer cycle: welcome email → onboarding form → kickoff call → policy customization → acknowledgment tracking → certificate. Identify every gap before customer #1", owner: "ALL", time: "2 hrs" },
+    ]
+  },
+];
+
+let activeFilter = 'ALL';
+let taskStates = {};
+
+// Load saved state
+try {
+  const saved = localStorage.getItem('pp_tasks');
+  if (saved) taskStates = JSON.parse(saved);
+} catch(e) {}
+
+function saveState() {
+  try { localStorage.setItem('pp_tasks', JSON.stringify(taskStates)); } catch(e) {}
+}
+
+function getTaskId(pi, ti) { return `${pi}_${ti}`; }
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderVisible();
+}
+
+function renderVisible() {
+  document.querySelectorAll('.task-row').forEach(row => {
+    const owner = row.dataset.owner;
+    if (activeFilter === 'ALL' || owner === activeFilter) {
+      row.classList.remove('hidden');
+    } else {
+      row.classList.add('hidden');
+    }
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const allTasks = document.querySelectorAll('.task-row:not(.hidden)');
+  const doneTasks = document.querySelectorAll('.task-row:not(.hidden).done');
+  const total = allTasks.length;
+  const done = doneTasks.length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('globalBar').style.width = pct + '%';
+  document.getElementById('globalCount').textContent = `${done} / ${total} done`;
+
+  // Per-phase progress
+  data.forEach((phase, pi) => {
+    const phaseTasks = document.querySelectorAll(`.phase-task-${pi}:not(.hidden)`);
+    const phaseDone = document.querySelectorAll(`.phase-task-${pi}:not(.hidden).done`);
+    const fill = document.getElementById(`phase-fill-${pi}`);
+    if (fill && phaseTasks.length) {
+      fill.style.width = Math.round(phaseDone.length / phaseTasks.length * 100) + '%';
+    }
+  });
+}
+
+function toggleTask(id, el) {
+  taskStates[id] = !taskStates[id];
+  saveState();
+  if (taskStates[id]) {
+    el.classList.add('done');
+  } else {
+    el.classList.remove('done');
+  }
+  updateProgress();
+}
+
+function togglePhase(pi) {
+  const phase = document.getElementById(`phase-${pi}`);
+  phase.classList.toggle('collapsed');
+}
+
+function render() {
+  const container = document.getElementById('phases');
+  container.innerHTML = '';
+
+  data.forEach((phase, pi) => {
+    const div = document.createElement('div');
+    div.className = 'phase';
+    div.id = `phase-${pi}`;
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'phase-header';
+    headerDiv.onclick = () => togglePhase(pi);
+
+    const badge = document.createElement('span');
+    badge.className = 'phase-badge';
+    badge.style.background = phase.color + '18';
+    badge.style.color = phase.color;
+    badge.style.border = `1px solid ${phase.color}30`;
+    badge.textContent = phase.phase;
+
+    headerDiv.innerHTML = `
+      <span class="phase-num">${phase.phase}</span>
+      <span class="phase-title">${phase.title}</span>
+      <span class="phase-days">${phase.days}</span>
+      <span class="phase-chevron">▾</span>
+    `;
+    headerDiv.insertBefore(badge, headerDiv.querySelector('.phase-title'));
+    headerDiv.querySelector('.phase-num').remove();
+
+    div.appendChild(headerDiv);
+
+    const progressDiv = document.createElement('div');
+    progressDiv.className = 'phase-progress';
+    const progressFill = document.createElement('div');
+    progressFill.className = 'phase-progress-fill';
+    progressFill.id = `phase-fill-${pi}`;
+    progressFill.style.background = phase.color;
+    progressDiv.appendChild(progressFill);
+    div.appendChild(progressDiv);
+
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'phase-body';
+
+    phase.tasks.forEach((task, ti) => {
+      const id = getTaskId(pi, ti);
+      const isDone = !!taskStates[id];
+      const row = document.createElement('div');
+      row.className = `task-row phase-task-${pi}${isDone ? ' done' : ''}`;
+      row.dataset.owner = task.owner;
+      row.onclick = () => toggleTask(id, row);
+
+      row.innerHTML = `
+        <div class="checkbox"><span class="check-icon">✓</span></div>
+        <div class="task-info">
+          <div class="task-name">${task.name}</div>
+          <div class="task-note">${task.note}</div>
+        </div>
+        <div class="task-meta">
+          <span class="owner-tag owner-${task.owner}">${task.owner}</span>
+          <span class="task-time">${task.time}</span>
+        </div>
+      `;
+      bodyDiv.appendChild(row);
+    });
+
+    div.appendChild(bodyDiv);
+    container.appendChild(div);
+  });
+
+  renderVisible();
+}
+
+render();
+</script>
+</body>
+</html>
